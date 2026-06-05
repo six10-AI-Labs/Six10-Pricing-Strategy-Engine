@@ -1,0 +1,11 @@
+pandas>=2.0
+openpyxl>=3.1
+gspread>=5.12
+google-auth>=2.20
+google-auth-oauthlib>=1.0
+google-api-python-client>=2.100
+pyyaml>=6.0
+jinja2>=3.1
+scipy>=1.11
+anthropic>=0.40.0
+python-dotenv>=1.0

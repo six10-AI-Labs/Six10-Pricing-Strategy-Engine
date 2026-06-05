@@ -1,0 +1,44 @@
+# ── Credentials & tokens — stored as GitHub Secrets, never commit ─────────────
+pricing-strategy-engine-*.json
+credentials-gmail-*.json
+gmail_token.json
+
+# ── Local data feeds — pulled from Google Drive at runtime ────────────────────
+Data Feeds/
+
+# ── Internal / planning docs — not for the repo ───────────────────────────────
+handover.md
+CLAUDE.md
+tasks/
+.claude/
+terminal.txt
+Project3_Brief_*.docx
+
+# ── Local output & test files ─────────────────────────────────────────────────
+pricing_engine.log
+*.log
+Pricing-Strategy-Engine.xlsx
+test_output*.xlsx
+audit_*.xlsx
+verify_*.xlsx
+config_test.yaml
+
+# ── Email report PDFs saved locally ───────────────────────────────────────────
+Six10 Weekly*.pdf
+*.pdf
+
+# ── Python cache ───────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Environment ───────────────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+
+# ── OS noise ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

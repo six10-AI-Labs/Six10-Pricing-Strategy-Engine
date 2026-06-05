@@ -1,0 +1,180 @@
+brands:
+  aquadoc:
+    margin_floor: 0.20
+    seasonal: true
+    price_elasticity: -0.6
+  mokita_naturals:
+    margin_floor: 0.25
+    seasonal: false
+    price_elasticity: -0.9
+  pawmedica:
+    margin_floor: 0.25
+    seasonal: false
+    price_elasticity: -0.8
+  ruckus:
+    margin_floor: 0.22
+    seasonal: false
+    price_elasticity: -0.8
+  pure_velvet:
+    margin_floor: 0.22
+    seasonal: false
+    price_elasticity: -0.8
+  pureauty_naturals:
+    margin_floor: 0.25
+    seasonal: false
+    price_elasticity: -1.0
+  visivite:
+    margin_floor: 0.25
+    seasonal: false
+    price_elasticity: -0.7
+  nl_brands_other:
+    margin_floor: 0.25
+    seasonal: false
+    price_elasticity: -0.8
+
+brand_name_mapping:
+  "Mav Aquadoc": "aquadoc"
+  "AquaDoc": "aquadoc"
+  "Aquadoc": "aquadoc"
+  "Pawmedica": "pawmedica"
+  "PawMedica": "pawmedica"
+  "Pawmedica Ruckus Pure Velve": "nl_brands"
+  "PawMedica Ruckus Pure Velve": "nl_brands"
+  "NL Brands (PawMedica)": "nl_brands"
+  "NL Brands (Pawmedica)": "nl_brands"
+  "VisiVite": "visivite"
+  "Visivite": "visivite"
+  "Ruckus | CAD": "ruckus"
+  "Ruckus": "ruckus"
+  "Pure Velvet": "pure_velvet"
+  "Pureauty Naturals": "pureauty_naturals"
+  "Mokita Naturals": "mokita_naturals"
+
+signals:
+  weights:
+    ctr: 0.10          # was 0.15; reduced by 0.05 to accommodate bsr signal
+    conversion: 0.20
+    velocity: 0.20
+    margin: 0.15
+    trend: 0.15
+    refund_rate: 0.05
+    inventory_pressure: 0.05
+    yoy_factor: 0.05
+    bsr: 0.05           # Helium10 keyword avg rank trend (organic visibility)
+  min_weekly_units: 3   # Below this → force HOLD + confidence "Insufficient Data" (too few sales for reliable signal)
+  thresholds:
+    raise_score: 0.25
+    lower_score: -0.25
+    ctr_raise_factor: 1.15
+    ctr_lower_factor: 0.85
+    cr_raise_pct: 0.10
+    cr_lower_pct: -0.10
+    velocity_raise_pct: 0.08
+    velocity_lower_pct: -0.08
+    margin_comfortable_cushion: 0.15
+    margin_tight_cushion: 0.05
+    refund_rate_threshold: 0.05
+    low_dos_days: 14
+
+confidence:
+  high_min_signals: 3
+  medium_min_signals: 2
+  min_data_completeness: 0.60
+
+price_scenarios:
+  raise_pcts: [0.05, 0.10]
+  lower_pcts: [0.05, 0.10]
+  default_elasticity: -0.8
+
+analysis_window_days: 30
+prior_window_days: 30
+yoy_window_days: 30   # Same-week-last-year window (365 days back). Uses Sellerise historical data already loaded.
+                      # Seasonal brands (aquadoc) use this to adjust velocity signal — a velocity drop in off-peak
+                      # is expected and suppressed. YoY factor = current_velocity / same_week_last_year_velocity.
+                      # If Sellerise files don't go back 365 days, yoy_factor = None and weight redistributes to velocity.
+                      # Future: add Drive folder lookup for historical files when local data is insufficient.
+lookback_period_days: 28  # ~4 weeks — how long after team actions a recommendation before engine checks the effect.
+                           # Engine reads 'Pipeline Actions' tab (populated by email form) to know when action was taken.
+
+data:
+  base_dir: "Data Feeds"
+  brand_folders:
+    aquadoc: "AquaDoc"
+    mokita_naturals: "Mokita Naturals"
+    nl_brands: "NL Brands (PawMedica)"
+    pureauty_naturals: "Pureauty Naturals"
+    visivite: "Visivite"
+
+google_sheets:
+  sheet_id: "1xtyF6SDcQNA5H1wJ9itQm6WIHN0_NL9DAO7DA44NaEA"
+  credentials_path: "pricing-strategy-engine-4983eab4d919.json"  # service account for Sheets
+
+# Google Drive folder IDs — used by src/drive_sync.py to pull latest data files
+# at pipeline startup so the engine never reads stale local copies.
+# All IDs confirmed 2026-05-06.
+drive:
+  # COGS Sheet (Google Sheets) — always re-exported as XLSX on each run
+  cogs_sheet_id: "1EQ3K0LUctNsI8HCfk0UdAs38jCSrEovqHYXBqCun2ps"
+
+  # SellerRise Sales Data brand sub-folders
+  # Maps brand_key (same keys as data.brand_folders) → Drive folder ID
+  sellerise_brand_folders:
+    aquadoc:           "1vZ6PNIQDcOg8RRvHZRNIWNor1w7CvBd_"
+    mokita_naturals:   "1GgrTHkIuduoSgUctGzjfkYIcTGZPZxYJ"
+    nl_brands:         "1DcN6vDweye6roEBO98aPHyf1wURlTKcg"
+    pureauty_naturals: "1p9uj7kvbMnMOd8-ozLHJZcbu9Ha4ZN5J"
+    visivite:          "1QudsjVAXsM5toamHxQxatAE8wUePlV9O"
+
+  # Amazon FBA Inventory report brand sub-folders
+  # Keys must match the local folder names under "Amazon FBA Inventory report/"
+  fba_brand_folders:
+    AquaDoc:               "1ofmezQ47MNG8dROCil8WD0Hr9Tod3I3T"
+    "NL Brands (Pawmedica)": "1gDl6hPWmuJC7aIP2K5dHL1Mzszlw7ykA"
+    Mokita Naturals:       "1UiKK73evD5C-etevYBTB4z_cBCNMtlJk"
+    Pureauty Naturals:     "1RDdVNp1muQM2CpQCDyXyGVg87VRO1dS_"
+    Visivite:              "1b9Fel-0IMZghfyPOWkd9SbP4ogBkMHbL"
+
+  # Amazon Fee Preview brand sub-folders (XLSX, same dedup strategy as FBA)
+  fee_preview_brand_folders:
+    AquaDoc: "1CEiOko_MHLzyldjQIFtYGWChAP1DCUf4"
+
+  # Amazon Storage Fees brand sub-folders (XLSX, same dedup strategy)
+  storage_fees_brand_folders:
+    AquaDoc:           "13RdITJYcGh7aPkoiwXcJvuzgwqJRbajO"
+    "NL Brands (Pawmedica)": "1ER6r1SOjqiSVnYljmZ33UmoBbficouqY"
+    Mokita Naturals:   "1lXwg0tbBrjkN64oZmq3HM_gXwWHifXLF"
+    Pureauty Naturals: "1_dZjtLUEjKcqVViJyO4XzQuUGH8SPvbU"
+    Visivite:          "1gYJ2VtPnfAkirc6hYWkXYYXsz3UJx40z"
+
+  # Amazon Return Report brand sub-folders (CSV/XLSX, same dedup strategy)
+  return_report_brand_folders:
+    AquaDoc:           "1V8NAe_GasY9lpbpq7-KZjBKm5_ePoscb"
+    "NL Brands (Pawmedica)": "1PNfU5OVYauVeYvKwzYH6siAAHY14KkD3"
+    Mokita Naturals:   "1CHdmZsKvVNjG3IX-IFCv45YrZElus6Z3"
+    Pureauty Naturals: "1b7bqifSAkXDOhEtIvPn41gJFI4hcpj3r"
+    Visivite:          "1EHQcRkg-tLDrK3Rf2RI7tohxyTF7WQDz"
+
+  # Helium10 data — root CSV folder + brand XLSX sub-folders
+  helium10_csv_folder:   "1MzMyiX_QcU53Oqbt3Sdb3rS8BGOzwUOY"   # root CSVs (all brands)
+  helium10_brand_folders:
+    AquaDoc: "1ZTCZ9OOnxpG32wqaFglizKxseEnJqADH"              # AquaDoc XLSX
+
+email:
+  sender: "ai@six10ventures.com"
+  recipients:
+    - "shashank@six10ventures.com"
+    - "amber@six10ventures.com"
+    - "neil@six10ventures.com"
+  # Gmail API OAuth 2.0 — no App Password / no admin delegation required
+  gmail_credentials_path: "credentials-gmail-pricing.json"  # OAuth client credentials (one-time download)
+  gmail_token_path: "gmail_token.json"                       # auto-created on first run of authorize_gmail.py
+  # 1-click Dismiss / Pipeline logging from email.
+  # Paste your deployed Apps Script URL here (see apps_script.js for setup instructions).
+  # Leave blank to disable the action columns (tables still render correctly with "—").
+  dismiss_script_url: "https://script.google.com/macros/s/AKfycbwkUbs1NkIGg-nR-DTNroBYiEqqJxtYXtQIhTpmjSZ3BWTXjXUcawV39QFHS0ve3FUU/exec"
+
+llm:
+  enabled: true
+  model: "claude-sonnet-4-6"
+  max_tokens: 12000
+  timeout_seconds: 240

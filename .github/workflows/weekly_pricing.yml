@@ -1,0 +1,45 @@
+name: Weekly Pricing Engine
+
+on:
+  schedule:
+    # Every Monday at 13:00 UTC = 8 am EST (winter) / 9 am EDT (summer)
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
+    # Manual trigger from the GitHub Actions UI
+
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write credentials from GitHub Secrets
+        run: |
+          echo '${{ secrets.GOOGLE_SHEETS_CREDENTIALS_JSON }}' > pricing-strategy-engine-4983eab4d919.json
+          echo '${{ secrets.GMAIL_CREDENTIALS_JSON }}' > credentials-gmail-pricing.json
+          echo '${{ secrets.GMAIL_TOKEN_JSON }}' > gmail_token.json
+
+      - name: Run pricing engine
+        run: python main.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pricing-engine-log-${{ github.run_id }}
+          path: pricing_engine.log
+          retention-days: 30

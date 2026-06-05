@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Six10 Weekly Pricing Alert</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; margin: 0; padding: 0; }
+    .wrapper { max-width: 1400px; margin: 24px auto; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: #1a1a2e; color: #fff; padding: 20px 28px; }
+    .header h1 { margin: 0; font-size: 22px; }
+    .header p  { margin: 4px 0 0; font-size: 13px; color: #ccc; }
+    .section { padding: 20px 28px; border-bottom: 1px solid #eee; }
+    .section:last-child { border-bottom: none; }
+    h2 { font-size: 16px; margin: 0 0 12px; color: #1a1a2e; border-left: 4px solid #4caf50; padding-left: 10px; }
+    h2.lower    { border-color: #f44336; }
+    h2.blocked  { border-color: #ff9800; }
+    h2.critical { border-color: #b71c1c; }
+    h2.revert   { border-color: #e91e63; }
+    .summary-chips { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+    .chip-raise   { background: #d9ead3; color: #2d6a2d; }
+    .chip-lower   { background: #fce4d6; color: #a93226; }
+    .chip-blocked { background: #ffd966; color: #7d6608; }
+    .chip-hold    { background: #f0f0f0; color: #555; }
+    /* Scrollable table container */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 900px; }
+    th { background: #f0f4f8; text-align: left; padding: 7px 10px; border-bottom: 2px solid #d0d8e0; font-size: 11px; color: #555; white-space: nowrap; }
+    td { padding: 6px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+    tr:hover td { background: #fafafa; }
+    .tag-high   { color: #1b5e20; font-weight: bold; }
+    .tag-medium { color: #e65100; }
+    .tag-low    { color: #b71c1c; }
+    .impact-pos  { color: #2d6a2d; font-weight: bold; }
+    .impact-neg  { color: #a93226; font-weight: bold; }
+    .impact-zero { color: #888; }
+    .na { color: #aaa; font-style: italic; }
+    .legend { background: #f7f9fc; border: 1px solid #d0d8e0; border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; color: #555; }
+    .revert-row td { background: #fff3e0; }
+    .critical-row td { background: #fff0f0; }
+    .footnote { font-size: 11px; color: #888; margin-top: 8px; }
+    .footer { padding: 14px 28px; background: #f9f9f9; font-size: 11px; color: #999; text-align: center; }
+    .gap-tight   { color: #c0392b; font-weight: bold; }
+    .gap-ok      { color: #555; }
+    td.product-name { max-width: 220px; word-break: break-word; font-size: 11px; color: #444; }
+    .badge-warn { display: inline-block; background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 3px; font-size: 10px; font-weight: bold; padding: 1px 5px; margin-bottom: 2px; }
+    .badge-critical { display: inline-block; background: #f8d7da; color: #721c24; border: 1px solid #f5c2c7; border-radius: 3px; font-size: 10px; font-weight: bold; padding: 1px 5px; margin-bottom: 2px; }
+    .badge-verified { display: inline-block; background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; font-size: 10px; font-weight: bold; padding: 1px 5px; margin-top: 2px; }
+    .badge-unverified { display: inline-block; background: #fff3cd; color: #856404; border: 1px solid #ffc107; border-radius: 3px; font-size: 10px; font-weight: bold; padding: 1px 5px; margin-top: 2px; }
+    /* Action button styles */
+    a.btn-dismiss  { background:#fce4d6; color:#a93226; border:1px solid #f5c6cb; border-radius:3px; padding:3px 9px; font-size:11px; font-weight:bold; text-decoration:none; display:inline-block; white-space:nowrap; }
+    a.btn-pipeline { background:#d4edda; color:#155724; border:1px solid #c3e6cb; border-radius:3px; padding:3px 9px; font-size:11px; font-weight:bold; text-decoration:none; display:inline-block; white-space:nowrap; }
+    th.col-action { text-align:center; width:72px; }
+    td.col-action { text-align:center; }
+    /* Signal summary and risk inline (new) */
+    .signal-summary { font-size: 11px; color: #6c757d; font-style: italic; margin-top: 3px; line-height: 1.5; }
+    .risk-inline    { font-size: 10px; color: #e65100; margin-top: 2px; line-height: 1.4; }
+    /* Quick-approve compact list (new) */
+    .quick-approve-list { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .quick-approve-list td { padding: 5px 8px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .quick-approve-list tr:last-child td { border-bottom: none; }
+    .qa-product { font-weight: 600; color: #1a1a2e; }
+    .qa-impact  { color: #2d6a2d; font-weight: bold; font-size: 12px; white-space: nowrap; }
+    .qa-impact-lower { color: #155724; }
+    /* Performance tracking block (new) */
+    .perf-delta-pos { color: #2d6a2d; font-weight: bold; }
+    .perf-delta-neg { color: #a93226; font-weight: bold; }
+    .perf-delta-neu { color: #888; }
+    .outcome-chip-success { background:#d4edda; color:#155724; border-radius:3px; padding:2px 7px; font-size:10px; font-weight:bold; }
+    .outcome-chip-under   { background:#fce4d6; color:#a93226; border-radius:3px; padding:2px 7px; font-size:10px; font-weight:bold; }
+    .outcome-chip-pending { background:#f0f0f0; color:#555; border-radius:3px; padding:2px 7px; font-size:10px; font-weight:bold; }
+    /* Reference section (monitor-only, de-emphasised) */
+    .ref-section { background: #f8f9fa; border-top: 2px solid #dee2e6; margin-top: 4px; }
+    .ref-section-header { padding: 12px 28px 8px; background: #e9ecef; font-size: 12px; color: #6c757d; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Six10 Weekly Pricing Alert</h1>
+    <p>Run date: {{ run_date }} &nbsp;|&nbsp; Data anchor: {{ anchor_date }}</p>
+  </div>
+
+  <!-- Run summary -->
+  <div class="section">
+    <h2>Run Summary</h2>
+    <div class="summary-chips">
+      <span class="chip chip-raise">&#8593; {{ counts.RAISE }} RAISE{% if wow_delta.RAISE is defined %} <span style="font-size:10px; opacity:0.75;">({% if counts.RAISE - wow_delta.RAISE > 0 %}+{% endif %}{{ counts.RAISE - wow_delta.RAISE }} vs last wk)</span>{% endif %}</span>
+      <span class="chip chip-lower">&#8595; {{ counts.LOWER }} LOWER{% if wow_delta.LOWER is defined %} <span style="font-size:10px; opacity:0.75;">({% if counts.LOWER - wow_delta.LOWER > 0 %}+{% endif %}{{ counts.LOWER - wow_delta.LOWER }} vs last wk)</span>{% endif %}</span>
+      {% if counts.LOWER_VELOCITY_DEFENCE > 0 %}<span style="background:#fff2cc; color:#7a6200; border:1px solid #f0d800; border-radius:12px; padding:4px 12px; font-size:13px; font-weight:600;">&#9651; {{ counts.LOWER_VELOCITY_DEFENCE }} LOWER (Monitor)</span>{% endif %}
+      <span class="chip chip-blocked">&#8856; {{ counts.LOWER_BLOCKED }} BLOCKED</span>
+      <span class="chip chip-hold">{{ counts.HOLD }} HOLD</span>
+    </div>
+    <p style="font-size:13px; color:#666; margin:4px 0 0;">Total ASINs processed: <strong>{{ counts.total }}</strong></p>
+    {% if dqr and dqr.data_age_days > 7 %}
+    <div style="margin-top:10px; padding:10px 14px; background:#fff3cd; border:1px solid #ffc107; border-radius:4px; font-size:12px; color:#856404;">
+      &#9888; <strong>Data is {{ dqr.data_age_days }} days old</strong> (last Sellerise export: {{ dqr.anchor_date }}).
+      Refresh Sellerise exports before actioning any recommendation.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Headline dollar impact banner -->
+  {% if headline_raise_impact > 0 or headline_lower_impact > 0 %}
+  <div style="background:#1b5e20; color:#fff; padding:14px 28px; display:flex; gap:32px; flex-wrap:wrap; align-items:center;">
+    {% if headline_raise_impact > 0 %}
+    <span style="font-size:15px; font-weight:bold;">&#9989; Approve top 5 raises = <span style="font-size:18px;">+${{ headline_raise_impact | int }}/week</span></span>
+    {% endif %}
+    {% if headline_lower_impact > 0 %}
+    <span style="font-size:15px; font-weight:bold;">&#128200; Approve top 5 lowers = <span style="font-size:18px;">+${{ headline_lower_impact | int }}/week</span></span>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Approve All Top 5 Raises — single bulk-action button -->
+  {% if approve_all_url and raise_rows %}
+  <div style="text-align:center; padding:14px 28px 6px;">
+    <a href="{{ approve_all_url }}" target="_blank"
+       style="background:#155724; color:#fff; padding:11px 30px; border-radius:4px;
+              font-size:14px; font-weight:bold; text-decoration:none; display:inline-block;
+              letter-spacing:0.3px;">
+      &#10003; Approve All Top {{ raise_rows|length }} Raises — As Recommended
+    </a>
+    <div style="font-size:11px; color:#888; margin-top:6px;">
+      Logs all {{ raise_rows|length }} raises at once · individual ✓&nbsp;Approve buttons in the table below
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top 5 RAISE -->
+  {% if raise_rows %}
+  <div class="section">
+    <h2>Top 5 RAISE Opportunities <span style="background:#d4edda; color:#155724; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; vertical-align:middle;">ACTION</span></h2>
+    <div class="legend">
+      <strong>Weekly Impact</strong> = estimated profit change after price increase, factoring in expected volume drop from brand elasticity model.
+      A negative impact means the volume loss outweighs the margin gain — weigh against other signals before acting.
+    </div>
+    <div class="table-scroll">
+    <table style="min-width:1200px;">
+      <thead>
+        <tr>
+          <th>ASIN</th>
+          <th>Product &amp; Signals</th>
+          <th>Size</th>
+          <th>Brand</th>
+          <th>Current Price</th>
+          <th>Margin</th>
+          <th>Units/wk</th>
+          <th>Confidence</th>
+          <th>&#8594; +5% Proposed</th>
+          <th>+5% Wkly Impact</th>
+          <th>&#8594; +10% Proposed</th>
+          <th>+10% Wkly Impact</th>
+          <th>Reasoning</th>
+          <th class="col-action">Skip</th>
+          <th class="col-action">Approve</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in raise_rows %}
+        <tr>
+          <td style="font-family:monospace; white-space:nowrap;">
+            <a href="https://www.amazon.com/dp/{{ r.asin }}" target="_blank" style="color:#1a1a2e; text-decoration:none;">{{ r.asin }}</a>
+            {% if r.margin_below_floor %}<br/><span class="badge-critical">UNDER FLOOR</span>{% endif %}
+          </td>
+          <td class="product-name">
+            {{ r.title_short or "—" }}
+            {% if r.signal_summary %}<div class="signal-summary">{{ r.signal_summary }}</div>{% endif %}
+            {% if r.risk_inline %}<div class="risk-inline">&#9888; {{ r.risk_inline }}</div>{% endif %}
+          </td>
+          <td style="white-space:nowrap; font-size:11px; color:#555; min-width:60px;">{{ r.size or "—" }}</td>
+          <td style="white-space:nowrap;">{{ r.brand }}{% if r.sub_brand %} / {{ r.sub_brand }}{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {{ "$%.2f"|format(r.current_price) if r.current_price else "—" }}
+            {% if r.price_source == "sellerise" %}<br/><span class="badge-verified">&#10003; live sales</span>{% elif r.price_source == "fba" %}<br/><span class="badge-unverified">&#9888; snapshot</span>{% elif r.price_source == "missing" or not r.price_source %}<br/><span class="badge-critical">no price data</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap; font-size:12px;">
+            {% if r.current_margin is not none %}<strong>{{ "%.1f"|format(r.current_margin * 100) }}%</strong>{% else %}—{% endif %}
+            {% if r.contribution_margin is not none %}<br/><span style="color:#888;">after-ads: {{ "%.1f"|format(r.contribution_margin * 100) }}%</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">{{ "%.1f"|format(r.avg_weekly_units) if r.avg_weekly_units else "—" }}</td>
+          <td class="tag-{{ r.confidence|lower }}" style="white-space:nowrap;">{{ r.confidence }}</td>
+          <td style="white-space:nowrap;">{% if r.raise_5pct_new_price %}<span style="color:#888;">&#8594;</span> <strong>${{ "%.2f"|format(r.raise_5pct_new_price) }}</strong>{% else %}—{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {% if r.raise_5pct_weekly_impact is not none %}
+              {% if r.raise_5pct_weekly_impact > 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.raise_5pct_weekly_impact) }}</span>
+              {% elif r.raise_5pct_weekly_impact < 0 %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.raise_5pct_weekly_impact|abs) }}</span>
+              {% else %}
+                <span class="impact-zero">$0.00</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">{% if r.raise_10pct_new_price %}<span style="color:#888;">&#8594;</span> <strong>${{ "%.2f"|format(r.raise_10pct_new_price) }}</strong>{% else %}—{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {% if r.raise_10pct_weekly_impact is not none %}
+              {% if r.raise_10pct_weekly_impact > 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.raise_10pct_weekly_impact) }}</span>
+              {% elif r.raise_10pct_weekly_impact < 0 %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.raise_10pct_weekly_impact|abs) }}</span>
+              {% else %}
+                <span class="impact-zero">$0.00</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="font-size:12px; min-width:320px; max-width:480px; word-break:break-word; line-height:1.6; white-space:normal;">{{ r.reasoning_short }}</td>
+          <td class="col-action">{% if r.dismiss_url %}<a href="{{ r.dismiss_url }}" target="_blank" class="btn-dismiss">&#10005; Skip</a>{% else %}<span class="na">—</span>{% endif %}</td>
+          <td class="col-action">{% if r.pipeline_url %}<a href="{{ r.pipeline_url }}" target="_blank" class="btn-pipeline">&#10003; Approve</a>{% else %}<span class="na">—</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Top 5 LOWER -->
+  {% if lower_rows %}
+  <div class="section">
+    <h2 class="lower">Top 5 LOWER Opportunities <span style="background:#d4edda; color:#155724; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; vertical-align:middle;">ACTION</span></h2>
+    <div class="legend">
+      <strong>Same Vol.</strong> = profit impact assuming no change in units sold. &nbsp;
+      <strong>+Demand</strong> = profit impact with estimated volume increase from lower price (brand elasticity model). &nbsp;
+      <strong>Break-Even %</strong> = extra unit volume needed for the price cut to at least match current weekly profit.
+    </div>
+    <div class="table-scroll">
+    <table style="min-width:1600px;">
+      <thead>
+        <tr>
+          <th>ASIN</th>
+          <th>Product &amp; Signals</th>
+          <th>Size</th>
+          <th>Brand</th>
+          <th>Current Price</th>
+          <th>Margin</th>
+          <th>Units/wk</th>
+          <th>Confidence</th>
+          <th>&#8594; &#8722;5% Proposed</th>
+          <th>-5% Same Vol.</th>
+          <th>-5% +Demand</th>
+          <th>-5% Break-Even</th>
+          <th>&#8594; &#8722;10% Proposed</th>
+          <th>-10% Same Vol.</th>
+          <th>-10% +Demand</th>
+          <th>-10% Break-Even</th>
+          <th>Reasoning</th>
+          <th class="col-action">Skip</th>
+          <th class="col-action">Approve</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in lower_rows %}
+        <tr>
+          <td style="font-family:monospace; white-space:nowrap;">
+            <a href="https://www.amazon.com/dp/{{ r.asin }}" target="_blank" style="color:#1a1a2e; text-decoration:none;">{{ r.asin }}</a>
+          </td>
+          <td class="product-name">
+            {{ r.title_short or "—" }}
+            {% if r.signal_summary %}<div class="signal-summary">{{ r.signal_summary }}</div>{% endif %}
+            {% if r.risk_inline %}<div class="risk-inline">&#9888; {{ r.risk_inline }}</div>{% endif %}
+          </td>
+          <td style="white-space:nowrap; font-size:11px; color:#555; min-width:60px;">{{ r.size or "—" }}</td>
+          <td style="white-space:nowrap;">{{ r.brand }}{% if r.sub_brand %} / {{ r.sub_brand }}{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {{ "$%.2f"|format(r.current_price) if r.current_price else "—" }}
+            {% if r.price_source == "sellerise" %}<br/><span class="badge-verified">&#10003; live sales</span>{% elif r.price_source == "fba" %}<br/><span class="badge-unverified">&#9888; snapshot</span>{% elif r.price_source == "missing" or not r.price_source %}<br/><span class="badge-critical">no price data</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap; font-size:12px;">
+            {% if r.current_margin is not none %}<strong>{{ "%.1f"|format(r.current_margin * 100) }}%</strong>{% else %}—{% endif %}
+            {% if r.contribution_margin is not none %}<br/><span style="color:#888;">after-ads: {{ "%.1f"|format(r.contribution_margin * 100) }}%</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">{{ "%.1f"|format(r.avg_weekly_units) if r.avg_weekly_units else "—" }}</td>
+          <td class="tag-{{ r.confidence|lower }}" style="white-space:nowrap;">{{ r.confidence }}</td>
+          <td style="white-space:nowrap;">{% if r.lower_5pct_new_price %}<span style="color:#888;">&#8594;</span> <strong>${{ "%.2f"|format(r.lower_5pct_new_price) }}</strong>{% else %}—{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {% if r.lower_5pct_scenario_a is not none %}
+              {% if r.lower_5pct_scenario_a >= 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.lower_5pct_scenario_a) }}</span>
+              {% else %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.lower_5pct_scenario_a|abs) }}</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if r.lower_5pct_scenario_b is not none %}
+              {% if r.lower_5pct_scenario_b >= 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.lower_5pct_scenario_b) }}</span>
+              {% else %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.lower_5pct_scenario_b|abs) }}</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">{% if r.lower_5pct_break_even_pct is not none %}+{{ "%.1f"|format(r.lower_5pct_break_even_pct) }}%{% else %}<span class="na">N/A</span>{% endif %}</td>
+          {% if r.lower_10pct_viable %}
+          <td style="white-space:nowrap;">{% if r.lower_10pct_new_price %}<span style="color:#888;">&#8594;</span> <strong>${{ "%.2f"|format(r.lower_10pct_new_price) }}</strong>{% else %}—{% endif %}</td>
+          <td style="white-space:nowrap;">
+            {% if r.lower_10pct_scenario_a is not none %}
+              {% if r.lower_10pct_scenario_a >= 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.lower_10pct_scenario_a) }}</span>
+              {% else %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.lower_10pct_scenario_a|abs) }}</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if r.lower_10pct_scenario_b is not none %}
+              {% if r.lower_10pct_scenario_b >= 0 %}
+                <span class="impact-pos">+${{ "%.2f"|format(r.lower_10pct_scenario_b) }}</span>
+              {% else %}
+                <span class="impact-neg">-${{ "%.2f"|format(r.lower_10pct_scenario_b|abs) }}</span>
+              {% endif %}
+            {% else %}<span class="na">N/A</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">{% if r.lower_10pct_break_even_pct is not none %}+{{ "%.1f"|format(r.lower_10pct_break_even_pct) }}%{% else %}<span class="na">N/A</span>{% endif %}</td>
+          {% else %}
+          <td colspan="4" class="na" style="text-align:center; white-space:nowrap;">Below margin floor</td>
+          {% endif %}
+          <td style="font-size:12px; min-width:320px; max-width:480px; word-break:break-word; line-height:1.6; white-space:normal;">{{ r.reasoning_short }}</td>
+          <td class="col-action">{% if r.dismiss_url %}<a href="{{ r.dismiss_url }}" target="_blank" class="btn-dismiss">&#10005; Skip</a>{% else %}<span class="na">—</span>{% endif %}</td>
+          <td class="col-action">{% if r.pipeline_url %}<a href="{{ r.pipeline_url }}" target="_blank" class="btn-pipeline">&#10003; Approve</a>{% else %}<span class="na">—</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="footnote">
+      Break-even % = additional unit volume needed to match current weekly profit at the lower price.
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- Performance Tracking Block — outcomes for actioned changes in last 2-4 weeks -->
+  <div class="section">
+    <h2 style="border-color:#7b68ee;">&#128200; Recent Price Changes — How Are They Performing?</h2>
+    {% if performance_rows %}
+    <div class="table-scroll">
+    <table style="min-width:800px;">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Brand</th>
+          <th>Move</th>
+          <th>Actioned</th>
+          <th>Price Before &#8594; Now</th>
+          <th>&#916; Units/wk</th>
+          <th>&#916; Revenue/wk</th>
+          <th>&#916; Margin</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in performance_rows %}
+        <tr>
+          <td class="product-name">{{ p.title_short or "—" }}</td>
+          <td style="white-space:nowrap; font-size:12px;">{{ p.brand }}</td>
+          <td style="white-space:nowrap; font-size:12px;">{{ p.recommendation }}</td>
+          <td style="white-space:nowrap; font-size:12px;">{{ p.implemented_date or "—" }}</td>
+          <td style="white-space:nowrap; font-size:12px;">
+            {% if p.pre_price %}${{ "%.2f"|format(p.pre_price) }}{% else %}—{% endif %}
+            &#8594;
+            {% if p.curr_price %}<strong>${{ "%.2f"|format(p.curr_price) }}</strong>{% else %}—{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if p.delta_units_pct is not none %}
+              {% if p.delta_units_pct > 0 %}
+                <span class="perf-delta-pos">+{{ "%.1f"|format(p.delta_units_pct) }}%</span>
+              {% elif p.delta_units_pct < 0 %}
+                <span class="perf-delta-neg">{{ "%.1f"|format(p.delta_units_pct) }}%</span>
+              {% else %}
+                <span class="perf-delta-neu">0%</span>
+              {% endif %}
+            {% elif not p.data_available %}<span class="na">no data</span>
+            {% else %}<span class="na">—</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if p.delta_revenue_weekly is not none %}
+              {% if p.delta_revenue_weekly > 0 %}
+                <span class="perf-delta-pos">+${{ "%.0f"|format(p.delta_revenue_weekly) }}/wk</span>
+              {% elif p.delta_revenue_weekly < 0 %}
+                <span class="perf-delta-neg">-${{ "%.0f"|format(p.delta_revenue_weekly|abs) }}/wk</span>
+              {% else %}
+                <span class="perf-delta-neu">$0/wk</span>
+              {% endif %}
+            {% else %}<span class="na">—</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if p.delta_margin_pp is not none %}
+              {% if p.delta_margin_pp > 0 %}
+                <span class="perf-delta-pos">+{{ "%.1f"|format(p.delta_margin_pp) }}pp</span>
+              {% elif p.delta_margin_pp < 0 %}
+                <span class="perf-delta-neg">{{ "%.1f"|format(p.delta_margin_pp) }}pp</span>
+              {% else %}
+                <span class="perf-delta-neu">0pp</span>
+              {% endif %}
+            {% else %}<span class="na">—</span>{% endif %}
+          </td>
+          <td style="white-space:nowrap;">
+            {% if p.outcome == "success" %}
+              <span class="outcome-chip-success">&#10003; On track</span>
+            {% elif p.outcome == "underperforming" %}
+              <span class="outcome-chip-under">&#9888; Review</span>
+            {% else %}
+              <span class="outcome-chip-pending">&#8635; Pending</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="footnote">Showing price changes actioned 2–4 weeks ago. Click &#10003; Approve on any recommendation to start tracking it here.</p>
+    {% else %}
+    <p style="font-size:13px; color:#888; margin:0; padding:8px 0;">
+      No price changes actioned in the last 2–4 weeks. Click <strong>&#10003; Approve</strong> on the top picks above to start tracking outcomes here.
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- Look-back revert alerts — action-worthy, kept in main email -->
+    {% if revert_rows %}
+    <div class="section">
+      <h2 class="revert">&#9888; Look-Back Revert Alerts</h2>
+      <p style="font-size:13px; color:#666; margin:0 0 10px;">
+        The following implemented recommendations are underperforming ~4 weeks after action.
+        Review whether to revert to the prior price.
+      </p>
+      <div class="table-scroll">
+      <table style="min-width:1100px;">
+        <thead>
+          <tr>
+            <th>ASIN</th><th>Product</th><th>Brand</th><th>Engine Rec.</th>
+            <th>Actioned</th><th>What Team Did</th>
+            <th>Pre-Conversion</th><th>Post-Conversion</th>
+            <th>Pre-Profit/wk</th><th>Post-Profit/wk</th><th>Outcome</th>
+            <th class="col-action">Skip</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in revert_rows %}
+          <tr class="revert-row">
+            <td style="font-family:monospace; white-space:nowrap;">
+              <a href="https://www.amazon.com/dp/{{ r.asin }}" target="_blank" style="color:#1a1a2e; text-decoration:none;">{{ r.asin }}</a>
+            </td>
+            <td class="product-name">{{ r.title_short or "—" }}</td>
+            <td>{{ r.brand }}</td>
+            <td>{{ r.recommendation }}</td>
+            <td style="white-space:nowrap;">{{ r.implemented_date or "—" }}</td>
+            <td style="font-size:11px; min-width:200px; word-break:break-word; line-height:1.5;">
+              {% if r.actual_action_taken %}
+                {{ r.actual_action_taken }}
+                {% if r.actual_price_implemented %}
+                  <br/><span style="color:#888;">Price set: ${{ "%.2f"|format(r.actual_price_implemented) }}</span>
+                {% endif %}
+              {% else %}
+                <span class="na">No notes logged</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;">{% if r.pre_conversion is not none %}{{ "%.1f"|format(r.pre_conversion * 100) }}%{% else %}—{% endif %}</td>
+            <td style="white-space:nowrap;">{% if r.post_conversion is not none %}{{ "%.1f"|format(r.post_conversion * 100) }}%{% else %}—{% endif %}</td>
+            <td style="white-space:nowrap;">{% if r.pre_net_profit_weekly is not none %}${{ "%.2f"|format(r.pre_net_profit_weekly) }}{% else %}—{% endif %}</td>
+            <td style="white-space:nowrap;">
+              {% if r.post_net_profit_weekly is not none %}
+                {% if r.post_net_profit_weekly >= (r.pre_net_profit_weekly or 0) %}
+                  <span class="impact-pos">+${{ "%.2f"|format(r.post_net_profit_weekly) }}</span>
+                {% else %}
+                  <span class="impact-neg">${{ "%.2f"|format(r.post_net_profit_weekly) }}</span>
+                {% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td><strong style="color:#c0392b;">{{ r.outcome }}</strong></td>
+            <td class="col-action">{% if r.dismiss_url %}<a href="{{ r.dismiss_url }}" target="_blank" class="btn-dismiss">&#10005; Skip</a>{% else %}<span class="na">—</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+    </div>
+    {% endif %}
+
+    {# Seasonality section removed from email — full data in Full Catalog Sheet #}
+
+    {% if dqr %}
+    <!-- Data Health Section -->
+    <div class="section" style="background:{% if dqr.has_warnings or dqr.has_critical %}#fffdf0{% else %}#f7fbf7{% endif %}; border-left:4px solid {% if dqr.has_critical %}#b71c1c{% elif dqr.has_warnings %}#e65100{% else %}#2d6a2d{% endif %};">
+      <h2 style="border-color:{% if dqr.has_critical %}#b71c1c{% elif dqr.has_warnings %}#e65100{% else %}#2d6a2d{% endif %}; color:#1a1a2e;">
+        &#128202; Data Health
+      </h2>
+
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; font-size:12px;">
+        <span style="background:#e8f5e9; color:#2d6a2d; border:1px solid #c8e6c9; border-radius:4px; padding:4px 10px;">
+          &#128197; Data anchor: <strong>{{ dqr.anchor_date }}</strong>
+          {% if dqr.data_age_days > 10 %}
+            <span style="color:#e65100;"> ({{ dqr.data_age_days }} days old)</span>
+          {% else %}
+            <span style="color:#2d6a2d;"> ({{ dqr.data_age_days }} days old)</span>
+          {% endif %}
+        </span>
+        <span style="background:#e8f5e9; color:#2d6a2d; border:1px solid #c8e6c9; border-radius:4px; padding:4px 10px;">
+          &#128230; Sellerise: <strong>{{ dqr.sellerise_brands_loaded | join(", ") }}</strong>
+        </span>
+        <span style="background:#e8f5e9; color:#2d6a2d; border:1px solid #c8e6c9; border-radius:4px; padding:4px 10px;">
+          &#128230; FBA Inventory: <strong>{{ dqr.fba_count }} ASINs</strong>
+        </span>
+      </div>
+
+      {% if dqr.issues %}
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        {% for issue in dqr.issues %}
+        <div style="border-radius:4px; padding:10px 14px; border:1px solid {% if issue.severity == 'warning' %}#ffe0b2{% elif issue.severity == 'critical' %}#ffcdd2{% else %}#bee5eb{% endif %}; background:{% if issue.severity == 'warning' %}#fff8f0{% elif issue.severity == 'critical' %}#fff0f0{% else %}#f0f9ff{% endif %};">
+          <div style="font-size:12px; color:{% if issue.severity == 'warning' %}#e65100{% elif issue.severity == 'critical' %}#b71c1c{% else %}#0277bd{% endif %}; font-weight:bold; margin-bottom:4px;">
+            {% if issue.severity == 'warning' %}&#9888;{% elif issue.severity == 'critical' %}&#128680;{% else %}&#8505;{% endif %}
+            {{ issue.message | safe }}
+          </div>
+          {% if issue.fix %}
+          <div style="font-size:11px; color:#555; margin-bottom:{% if issue.asins %}4px{% else %}0{% endif %};">
+            &#8594; {{ issue.fix | safe }}
+          </div>
+          {% endif %}
+          {% if issue.asins %}
+          <div style="font-size:11px; color:#777; margin-top:3px; font-family:monospace; word-break:break-word;">
+            {{ issue.asins | join(" &nbsp; ") }}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:12px; color:#2d6a2d; margin:0;">&#10003; All data sources loaded cleanly — no issues this week.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  <div class="footer">
+    This is an automated advisory report generated by the Six10 Pricing Strategy Engine.<br/>
+    No prices have been changed automatically. All recommendations require manual review and implementation.<br/>
+    <span style="font-size:10px; color:#bbb;">Skip = remove from next pipeline run &nbsp;|&nbsp; Approve = log as actioned for team records</span>
+    {% if also_sent_to %}
+    <br/><span style="font-size:10px; color:#ccc; margin-top:4px; display:inline-block;">
+      Also sent to: {{ also_sent_to | join(", ") }}
+    </span>
+    {% endif %}
+  </div>
+
+</div>
+</body>
+</html>
