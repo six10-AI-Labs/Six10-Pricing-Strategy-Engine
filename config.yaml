@@ -163,6 +163,8 @@ email:
   sender: "ai@six10ventures.com"
   recipients:
     - "shashank@six10ventures.com"
+    - "amber@six10ventures.com"
+    - "neil@six10ventures.com"
   # Gmail API OAuth 2.0 — no App Password / no admin delegation required
   gmail_credentials_path: "credentials-gmail-pricing.json"  # OAuth client credentials (one-time download)
   gmail_token_path: "gmail_token.json"                       # auto-created on first run of authorize_gmail.py
